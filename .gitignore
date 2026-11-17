@@ -1,0 +1,18 @@
+# dependências
+node_modules
+
+# build e dados locais
+.nuxt
+.output
+.data
+dist
+
+# segredos
+.env
+.env.*
+!.env.example
+
+# sistema / editor
+.DS_Store
+*.log
+.claude/settings.local.json
