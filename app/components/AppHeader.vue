@@ -7,11 +7,8 @@ const route = useRoute()
 watch(() => route.fullPath, () => { mobileOpen.value = false })
 
 const links = [
-  { label: 'Novidades', to: '/produtos?tag=novidades' },
-  { label: 'Vestidos', to: '/produtos?category=vestidos' },
-  { label: 'Conjuntos', to: '/produtos?category=conjuntos' },
-  { label: 'Blusas', to: '/produtos?category=blusas' },
-  { label: 'Ver tudo', to: '/produtos' }
+  { label: 'Coleção', to: '/produtos' },
+  ...CATEGORIES.map(c => ({ label: c.label, to: `/produtos?category=${c.value}` }))
 ]
 </script>
 

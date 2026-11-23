@@ -1,5 +1,6 @@
 <script setup lang="ts">
 useSeoMeta({ title: 'Trocas, entregas e pagamentos | Sempre Gabriela' })
+const whatsappUrl = `https://wa.me/${useRuntimeConfig().public.whatsapp}`
 </script>
 
 <template>
@@ -13,7 +14,7 @@ useSeoMeta({ title: 'Trocas, entregas e pagamentos | Sempre Gabriela' })
         <li>A <strong>primeira troca é grátis</strong> em até 7 dias corridos após o recebimento.</li>
         <li>A peça deve estar sem uso, com etiqueta e na embalagem original.</li>
         <li>Pelo Código de Defesa do Consumidor, você pode desistir da compra em até 7 dias e receber o valor de volta.</li>
-        <li>Para solicitar, chame a gente no WhatsApp com o número do pedido.</li>
+        <li>Para solicitar, <a :href="whatsappUrl" target="_blank" rel="noopener" class="link">chame a gente no WhatsApp</a> com o número do pedido.</li>
       </ul>
     </section>
 
@@ -36,6 +37,16 @@ useSeoMeta({ title: 'Trocas, entregas e pagamentos | Sempre Gabriela' })
         <li>Pagamentos processados com segurança pelo Mercado Pago.</li>
       </ul>
     </section>
+
+    <section id="contato" class="card">
+      <h2>Fale com a loja</h2>
+      <ul>
+        <li>WhatsApp: <a :href="whatsappUrl" target="_blank" rel="noopener" class="link">{{ STORE.phone }}</a></li>
+        <li>E-mail: <a :href="`mailto:${STORE.email}`" class="link">{{ STORE.email }}</a></li>
+        <li>{{ STORE.legalName }} · CNPJ {{ STORE.cnpj }}</li>
+        <li>{{ storeAddressLine() }}</li>
+      </ul>
+    </section>
   </div>
 </template>
 
@@ -43,5 +54,6 @@ useSeoMeta({ title: 'Trocas, entregas e pagamentos | Sempre Gabriela' })
 .narrow { max-width: 760px; display: flex; flex-direction: column; gap: 18px; }
 h2 { font-family: var(--sg-sans); font-size: 1.15rem; font-weight: 700; margin-bottom: 10px; }
 ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
-section { scroll-margin-top: 100px; }
+section { scroll-margin-top: 100px; overflow-wrap: anywhere; }
+.link { color: var(--sg-red); text-decoration: underline; }
 </style>

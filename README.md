@@ -2,14 +2,16 @@
 
 Loja da **@use.sempregabriela** feita com **Nuxt 4 + Vue 3 + TypeScript + Pinia + PrimeVue 4**.
 
-- Catálogo com filtros (categoria, tamanho, busca, ordenação), página de produto com cor/tamanho/estoque
+- Coleção real (9 vestidos, 22 fotos) com filtros por estilo, tamanho, busca e ordenação
 - Sacola lateral + página de sacola, persistida no navegador
-- **Frete pelos Correios** (PAC e SEDEX) com a API REST oficial + busca de endereço por CEP (ViaCEP / BrasilAPI)
-- **Pagamento pelo Mercado Pago**: Pix (QR Code + copia e cola), cartão de crédito (até 6x sem juros) e boleto
-- Webhook do Mercado Pago com validação de assinatura, página do pedido que se atualiza sozinha
-- Regras da loja: 5% off no Pix, frete grátis no PAC acima de R$ 399, parcela mínima de R$ 50
+- **Frete PAC e SEDEX pelo Melhor Envio** + busca de endereço por CEP (ViaCEP / BrasilAPI)
+- **Pagamento pelo Mercado Pago**: Pix (QR Code + copia e cola), cartão de crédito (até 3x sem juros) e boleto
+- Webhook do Mercado Pago, página do pedido que se atualiza sozinha
+- Regras confirmadas pela loja: 5% off no Pix, 3x sem juros
+- Regras **ainda não confirmadas** pela loja: frete grátis no PAC acima de R$ 399, parcela mínima de R$ 50, primeira troca grátis
 
-> Sem as chaves configuradas, a loja roda em **modo demonstração**: o frete vem de uma tabela estimada e nenhum pagamento é cobrado.
+> **Trava de pré-lançamento:** no `npm run dev` tudo funciona em demonstração. No build de produção a loja só
+> aceita pedido com Mercado Pago e Melhor Envio configurados **e** peça com `confirmed: true` no catálogo.
 
 ## Rodando
 
@@ -28,14 +30,18 @@ Build de produção: `npm run build` e depois `node .output/server/index.mjs`.
 > xattr -w 'com.apple.fileprovider.ignore#P' 1 node_modules .nuxt
 > ```
 
-## Configurando os Correios (frete real)
+## Configurando o frete (Melhor Envio)
 
-1. É preciso ter **contrato com os Correios** (pode ser o "Correios Empresas" para pequenos negócios).
-2. Em <https://cws.correios.com.br>, gere o **código de acesso às APIs** e confira o número do **cartão de postagem**, do **contrato** e da **DR**.
-3. Preencha no `.env`: `NUXT_CORREIOS_USUARIO`, `NUXT_CORREIOS_CODIGO_ACESSO`, `NUXT_CORREIOS_CARTAO_POSTAGEM`, `NUXT_CORREIOS_CONTRATO`, `NUXT_CORREIOS_DR` e o `NUXT_CORREIOS_CEP_ORIGEM` (de onde as peças saem).
-4. Confira com seu contrato os códigos de serviço (`03298` PAC e `03220` SEDEX são os padrões de contrato).
+A loja não tem contrato com os Correios, então o PAC e o SEDEX são cotados pelo Melhor Envio.
 
-O código está em `server/utils/correios.ts` (token com cache, preço e prazo em paralelo). O peso e as medidas de cada peça ficam no catálogo.
+1. Na conta da loja: **Integrações → Permissões de acesso**, gere um token com permissão de cotação (`shipping-calculate`).
+   Confira a validade na tela. Se usar OAuth (Área Dev), o token vence em 30 dias e exige rotina de renovação.
+2. Preencha `NUXT_MELHOR_ENVIO_TOKEN`.
+3. Preencha `NUXT_MELHOR_ENVIO_USER_AGENT` com nome do app e e-mail de contato técnico (a API exige).
+4. O CEP de origem já é o da loja (Canela/RS).
+
+O código está em `server/utils/shipping.ts`. Até a loja mandar o peso de cada peça, todas usam 700 g (teto da faixa informada).
+Para emitir etiqueta ainda vão faltar o **bairro** e o documento da remetente.
 
 ## Configurando o Mercado Pago (pagamento real)
 
@@ -44,20 +50,28 @@ O código está em `server/utils/correios.ts` (token com cache, preço e prazo e
 3. Em *Webhooks*, cadastre `https://SEU-DOMINIO/api/webhooks/mercadopago` (evento **Pagamentos**) e copie a assinatura secreta para `NUXT_MERCADO_PAGO_WEBHOOK_SECRET`.
 4. Defina `NUXT_PUBLIC_SITE_URL` com o domínio `https://` da loja.
 5. Ative o Pix na conta do Mercado Pago (é preciso ter uma chave Pix cadastrada).
+6. Ative **parcelas sem acréscimo até 3x** em *Seu negócio → Custos*. Sem isso o Mercado Pago cobra juros da cliente,
+   mesmo com o site anunciando "sem juros".
+7. No mesmo painel, escolha o prazo de recebimento. As opções são na hora, 14 ou 30 dias (não existe 1 dia útil).
+8. A integração usa a **API de Pagamentos** (`/v1/payments`), que o Mercado Pago hoje chama de legada. Ela segue funcionando,
+   mas teste com as credenciais de teste da aplicação nova antes de abrir a loja.
 
 Os dados do cartão são tokenizados no navegador pelo MercadoPago.js e **nunca passam pelo servidor**. O servidor recalcula preço, frete, desconto e parcelas antes de cobrar, então mudar valores pelo navegador não tem efeito.
 
-## Trocando nomes e fotos das peças
+## Catálogo e fotos
 
-Os produtos de exemplo estão em `server/utils/catalog.ts`. Para cada peça:
+As peças estão em `server/utils/catalog.ts`. Fotos, cores e detalhes visíveis são reais. **Nome, preço, tamanhos e
+estoque são exemplos.** Quando a loja confirmar uma peça, ajuste os valores e troque para `confirmed: true`.
 
-1. Coloque as fotos em `public/produtos/<slug>/1.jpg`, `2.jpg`... (de preferência 1200×1500 px, proporção 4:5)
-2. Preencha `images: ['/produtos/<slug>/1.jpg', '/produtos/<slug>/2.jpg']`
-3. Ajuste nome, preço, descrição, cores (`colorHex`), tamanhos, estoque e peso
+Para adicionar fotos, gere duas versões de cada uma em `public/produtos/<slug>/` e **remova os metadados**
+(foto de celular pode trazer o GPS):
 
-Enquanto não houver foto, aparece um placeholder com o "g." da marca na cor da peça.
+- `1.jpg`: 1200 px de largura
+- `1-p.jpg`: 600 px de largura
 
-**Logo:** o arquivo atual (`public/logo-instagram.jpg`) é a foto de perfil do Instagram, só 150 px. Peça o arquivo original (SVG ou PNG grande) e substitua.
+**Logo:** o arquivo atual (`public/logo-instagram.jpg`) é a foto de perfil do Instagram, só 150 px. Peça o arquivo original.
+
+Os dados da loja (CNPJ, endereço, contato) ficam em `shared/utils/store.ts`.
 
 ## Estrutura
 
@@ -70,16 +84,23 @@ app/
   theme/          gabriela.ts (preset PrimeVue com as cores da marca)
 server/
   api/            products, cep, shipping/quote, orders, webhooks/mercadopago
-  utils/          catalog, correios, mercadopago, orders, cart
+  utils/          catalog, shipping (Melhor Envio), mercadopago, orders, cart, launch (trava)
 shared/           tipos e regras de preço usadas no front e no back
 ```
 
 ## Antes de colocar no ar
 
-- [ ] Fotos, nomes, preços e estoque reais em `catalog.ts` (ou migrar para um banco/CMS)
-- [ ] Logo em alta resolução
-- [ ] Chaves de produção do Mercado Pago e dos Correios
-- [ ] Trocar o armazenamento de pedidos (`.data/orders`, em arquivo) por um banco (Postgres, Redis, Supabase...) se a hospedagem não tiver disco persistente
-- [ ] E-mail de confirmação do pedido (ponto marcado com `TODO` no webhook)
-- [ ] CNPJ, WhatsApp e textos de "Sobre" e "Trocas"
-- [ ] Painel para a Gabriela ver os pedidos e gerar etiquetas (próxima etapa)
+Com a loja:
+- [ ] Nome, preço, tamanhos, estoque e peso de cada peça; tabela de medidas
+- [ ] Bairro do endereço e confirmação do DDD do telefone
+- [ ] Confirmar frete grátis, parcela mínima e primeira troca grátis
+- [ ] Tokens do Mercado Pago e do Melhor Envio, por canal seguro
+- [ ] Confirmar com o contador o documento fiscal do MEI nos envios (a regra muda em 01/01/2027)
+- [ ] Logo em alta resolução e texto do "Sobre"
+
+No código:
+- [ ] Banco de dados para pedidos: na Vercel o disco não persiste, e `.data/orders` não funciona
+- [ ] `GET /api/orders/:id` devolve CPF e endereço a quem tiver o código do pedido: proteger e usar ID forte
+- [ ] Baixar estoque ao vender
+- [ ] E-mail do pedido para a loja e para a cliente
+- [ ] Etiqueta e rastreio pelo Melhor Envio

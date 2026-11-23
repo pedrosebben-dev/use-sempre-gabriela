@@ -16,8 +16,9 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Forma de pagamento inválida' })
 
   // ---- preços e frete recalculados no servidor ----
-  const { lines, subtotal, pkg } = resolveCart(body.items)
-  const options = applyFreeShipping(await quoteShipping(address.cep, pkg), subtotal)
+  const { lines, subtotal, shippingItems } = resolveCart(body.items)
+  assertCanSell(lines)
+  const options = applyFreeShipping(await quoteShipping(address.cep, shippingItems), subtotal)
   const shipping = options.find(o => o.service === body.shippingService)
   if (!shipping) throw createError({ statusCode: 400, statusMessage: 'Frete indisponível para este CEP' })
 

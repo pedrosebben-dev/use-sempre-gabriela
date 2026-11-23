@@ -12,7 +12,7 @@ export interface CartLine extends CartItem {
   maxStock: number
 }
 
-const STORAGE_KEY = 'sg-cart-v1'
+const STORAGE_KEY = 'sg-cart-v2' // v2: catálogo real (a sacola antiga tinha peças que não existem mais)
 
 export const useCartStore = defineStore('cart', {
   state: () => ({

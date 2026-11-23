@@ -1,4 +1,4 @@
-export type Category = 'vestidos' | 'conjuntos' | 'blusas' | 'saias' | 'calcas' | 'macacoes'
+export type Category = 'florais' | 'conchas' | 'mediterraneo' | 'lisos'
 
 export interface ProductVariant {
   sku: string
@@ -17,6 +17,8 @@ export interface Product {
   details: string[]
   price: number          // em reais
   compareAtPrice?: number
+  /** true só quando a loja confirmou nome, preço, tamanhos e estoque. Sem isso não vende em produção. */
+  confirmed: boolean
   /** URLs das fotos (em /public/produtos/...). Vazio = mostra placeholder. */
   images: string[]
   /** Peso em gramas e dimensões da peça embalada (cm) — usados no frete. */
@@ -43,7 +45,7 @@ export interface ShippingOption {
   price: number
   days: number
   deadline?: string
-  /** true quando calculado pela tabela de estimativa (sem credenciais dos Correios). */
+  /** true quando calculado pela tabela de estimativa (sem token do Melhor Envio). */
   estimated: boolean
 }
 

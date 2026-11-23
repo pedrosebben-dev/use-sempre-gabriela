@@ -1,7 +1,7 @@
 /** Regras comerciais da loja — usadas igualmente no navegador e no servidor. */
 export const PIX_DISCOUNT = 0.05            // 5% off no Pix
 export const FREE_SHIPPING_FROM = 399       // frete grátis (PAC) acima deste valor
-export const MAX_INSTALLMENTS = 6           // até 6x sem juros
+export const MAX_INSTALLMENTS = 3           // até 3x sem juros (ativar também no painel do Mercado Pago)
 export const MIN_INSTALLMENT_VALUE = 50     // parcela mínima
 
 export function round2(n: number) {

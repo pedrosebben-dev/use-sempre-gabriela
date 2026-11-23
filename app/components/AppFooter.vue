@@ -24,9 +24,7 @@ const year = new Date().getFullYear()
       </div>
       <div class="stack">
         <h4>Loja</h4>
-        <NuxtLink to="/produtos?category=vestidos">Vestidos</NuxtLink>
-        <NuxtLink to="/produtos?category=conjuntos">Conjuntos</NuxtLink>
-        <NuxtLink to="/produtos?category=blusas">Blusas</NuxtLink>
+        <NuxtLink v-for="c in CATEGORIES" :key="c.value" :to="`/produtos?category=${c.value}`">{{ c.label }}</NuxtLink>
         <NuxtLink to="/produtos">Ver tudo</NuxtLink>
       </div>
       <div class="stack">
@@ -46,9 +44,16 @@ const year = new Date().getFullYear()
         <p class="small">Processado pelo Mercado Pago. Entregas pelos Correios (PAC e SEDEX).</p>
       </div>
     </div>
-    <div class="container legal">
-      <span>© {{ year }} Sempre Gabriela · Moda feminina</span>
-      <span>CNPJ 00.000.000/0001-00</span>
+    <div class="legal-band">
+      <address class="container legal">
+        <span>© {{ year }} {{ STORE.name }}</span>
+        <span>{{ STORE.legalName }} · CNPJ {{ STORE.cnpj }}</span>
+        <span>{{ storeAddressLine() }}</span>
+        <span>
+          <a :href="`mailto:${STORE.email}`">{{ STORE.email }}</a> ·
+          <a :href="`tel:+${STORE.whatsapp}`">{{ STORE.phone }}</a>
+        </span>
+      </address>
     </div>
   </footer>
 </template>
@@ -64,7 +69,8 @@ a:hover { text-decoration: underline; }
 .pay span { background: rgb(255 255 255 / .16); padding: 6px 12px; border-radius: 999px; font-size: .85rem; }
 .pay i { margin-right: 4px; }
 .small { opacity: .85; }
-.legal { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding-top: 18px; padding-bottom: 24px; border-top: 1px solid rgb(255 255 255 / .25); font-size: .8rem; opacity: .85; }
+.legal-band { background: var(--sg-ink); color: var(--sg-cream); }
+.legal { display: flex; flex-direction: column; gap: 4px; padding-top: 18px; padding-bottom: 24px; font-size: .8rem; font-style: normal; overflow-wrap: anywhere; }
 :deep(.p-button-outlined) { color: #fff; border-color: rgb(255 255 255 / .6); }
 @media (max-width: 860px) { .cols { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 520px) { .cols { grid-template-columns: 1fr; } }
