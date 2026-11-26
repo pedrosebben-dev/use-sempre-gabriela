@@ -22,6 +22,12 @@ function mp<T>(path: string, opts: Parameters<typeof $fetch>[1] = {}) {
   })
 }
 
+/** A API documenta `yyyy-MM-dd'T'HH:mm:ss.SSSz` com deslocamento (ex.: -03:00), não o `Z` do toISOString. */
+function mpDate(msFromNow: number) {
+  const brt = new Date(Date.now() + msFromNow - 3 * 3_600_000)
+  return brt.toISOString().replace('Z', '-03:00')
+}
+
 export function mapStatus(s: string): OrderStatus {
   if (s === 'approved' || s === 'authorized') return 'approved'
   if (s === 'in_process' || s === 'in_mediation') return 'in_process'
@@ -74,10 +80,10 @@ export async function createPayment(order: Order, card?: { token: string; paymen
 
   if (order.paymentMethod === 'pix') {
     body.payment_method_id = 'pix'
-    body.date_of_expiration = new Date(Date.now() + 30 * 60_000).toISOString() // 30 min
+    body.date_of_expiration = mpDate(30 * 60_000) // 30 min
   } else if (order.paymentMethod === 'boleto') {
     body.payment_method_id = 'bolbradesco'
-    body.date_of_expiration = new Date(Date.now() + 3 * 86_400_000).toISOString()
+    body.date_of_expiration = mpDate(3 * 86_400_000)
     payer.address = {
       zip_code: onlyDigits(order.address.cep), street_name: order.address.street, street_number: order.address.number,
       neighborhood: order.address.neighborhood, city: order.address.city, federal_unit: order.address.state

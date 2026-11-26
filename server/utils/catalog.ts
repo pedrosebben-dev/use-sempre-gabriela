@@ -1,124 +1,104 @@
 import type { Product, ProductVariant } from '#shared/types'
 
 /**
- * CATÁLOGO DE EXEMPLO
- * Nomes e preços são provisórios. Quando a Gabriela mandar as fotos, coloque os arquivos em
- * /public/produtos/<slug>/1.jpg, 2.jpg ... e preencha o array `images` de cada peça.
- * (Para escalar, troque este arquivo por um banco de dados / CMS — a API já isola o acesso.)
+ * CATÁLOGO DA COLEÇÃO (fotos reais, enviadas pela cliente em 20/11/2026)
+ *
+ * Vêm das fotos: peça, cor, estampa e os detalhes visíveis.
+ * SÃO EXEMPLOS até a loja confirmar: nome, preço, tamanhos e estoque.
+ * Quando confirmar uma peça, ajuste os valores e troque para `confirmed: true`.
+ * Em produção, peça com `confirmed: false` não pode ser vendida (server/utils/launch.ts).
  */
-const sizes = ['PP', 'P', 'M', 'G', 'GG'] as const
+type Size = ProductVariant['size']
 
-function variants(prefix: string, colors: [string, string][], stock = 5): ProductVariant[] {
-  return colors.flatMap(([color, colorHex]) =>
-    sizes.map((size, i) => ({
-      sku: `${prefix}-${color.slice(0, 3).toUpperCase()}-${size}`,
-      color,
-      colorHex,
-      size,
-      // estoque de exemplo: tamanhos extremos com menos peças
-      stock: i === 0 || i === 4 ? Math.max(1, stock - 3) : stock
-    }))
-  )
+// Checklist: caixa de 30×22×6 cm e peças de 50 g a 700 g já embaladas.
+// Usa o teto da faixa até a loja mandar o peso de cada peça, para o frete não sair abaixo do custo.
+const BOX = { length: 30, width: 22, height: 6 }
+const WEIGHT = 700
+const EXAMPLE_STOCK: Partial<Record<Size, number>> = { P: 5, M: 5, G: 5 }
+
+/** public/produtos/<slug>/<n>.jpg (1200 px de largura) e <n>-p.jpg (600 px) */
+function photos(slug: string, count: number) {
+  return Array.from({ length: count }, (_, i) => `/produtos/${slug}/${i + 1}.jpg`)
 }
 
-const box = { length: 30, width: 22, height: 6 }
+function variants(prefix: string, color: string, colorHex: string, stock: Partial<Record<Size, number>>): ProductVariant[] {
+  return (Object.entries(stock) as [Size, number][]).map(([size, qty]) => ({
+    sku: `${prefix}-${size}`, color, colorHex, size, stock: qty
+  }))
+}
 
 export const products: Product[] = [
   {
-    id: 'p01', slug: 'vestido-midi-aurora', name: 'Vestido Midi Aurora', category: 'vestidos',
-    description: 'Vestido midi fluido com decote V e amarração na cintura. Leve, elegante e perfeito do brunch ao jantar.',
-    details: ['Tecido: viscose 100%', 'Forro na parte superior', 'Comprimento: 115 cm (tam. M)', 'Lavar à mão'],
-    price: 229.9, compareAtPrice: 279.9, images: [], weight: 350, dimensions: box,
-    tags: ['festa', 'verão'], isNew: true, isBestSeller: true,
-    variants: variants('VMA', [['Terracota', '#C4532F'], ['Off-white', '#F3EBDD']])
+    id: 'sg01', slug: 'vestido-longo-rubi', name: 'Vestido Longo Rubi', category: 'lisos',
+    price: 299.9, confirmed: false,
+    description: 'Vestido longo vermelho de brilho acetinado, frente única, com decote degagê e costas abertas.',
+    details: ['Frente única', 'Decote degagê', 'Costas abertas', 'Três botões na gola'],
+    images: photos('vestido-longo-rubi', 5), weight: WEIGHT, dimensions: BOX, tags: [],
+    variants: variants('RUB', 'Vermelho', '#C8242B', EXAMPLE_STOCK)
   },
   {
-    id: 'p02', slug: 'conjunto-alfaiataria-lis', name: 'Conjunto Alfaiataria Lis', category: 'conjuntos',
-    description: 'Blazer cropped + calça pantalona de cintura alta. Um conjunto que vai do escritório ao happy hour.',
-    details: ['Tecido: alfaiataria com elastano', 'Blazer com botão frontal', 'Calça com bolsos laterais'],
-    price: 349.9, images: [], weight: 700, dimensions: { length: 32, width: 25, height: 8 },
-    tags: ['trabalho'], isBestSeller: true,
-    variants: variants('CAL', [['Areia', '#D8C3A5'], ['Preto', '#1F1A17']])
+    id: 'sg02', slug: 'vestido-longo-tulipa', name: 'Vestido Longo Tulipa', category: 'florais',
+    price: 269.9, confirmed: false,
+    description: 'Vestido longo off-white com grandes tulipas vermelhas, busto em camadas e saia franzida.',
+    details: ['Alças finas reguláveis', 'Busto com pregas horizontais', 'Saia franzida'],
+    images: photos('vestido-longo-tulipa', 4), weight: WEIGHT, dimensions: BOX, tags: [],
+    variants: variants('TUL', 'Off-white', '#F3EBDD', EXAMPLE_STOCK)
   },
   {
-    id: 'p03', slug: 'blusa-ombro-a-ombro-flor', name: 'Blusa Ombro a Ombro Flor', category: 'blusas',
-    description: 'Blusa ciganinha com elástico e mangas bufantes. Romântica e confortável.',
-    details: ['Tecido: tricoline', 'Elástico no decote e punhos', 'Comprimento: 55 cm'],
-    price: 119.9, images: [], weight: 180, dimensions: box,
-    tags: ['casual'], isNew: true,
-    variants: variants('BOF', [['Branco', '#FAFAF7'], ['Rosa', '#E9A3A0']])
+    id: 'sg03', slug: 'vestido-longo-riviera', name: 'Vestido Longo Riviera', category: 'mediterraneo',
+    price: 259.9, confirmed: false,
+    description: 'Vestido longo azul com paisagem de praia mediterrânea na barra e saia franzida.',
+    details: ['Alças de amarrar nos ombros', 'Decote reto', 'Recorte abaixo do busto'],
+    images: photos('vestido-longo-riviera', 3), weight: WEIGHT, dimensions: BOX, tags: [],
+    variants: variants('RIV', 'Azul', '#8DB8DF', EXAMPLE_STOCK)
   },
   {
-    id: 'p04', slug: 'saia-midi-plissada-sol', name: 'Saia Midi Plissada Sol', category: 'saias',
-    description: 'Saia plissada com brilho acetinado e cós de elástico. Movimento lindo a cada passo.',
-    details: ['Tecido: cetim plissado', 'Cós com elástico', 'Comprimento: 80 cm'],
-    price: 159.9, compareAtPrice: 189.9, images: [], weight: 300, dimensions: box,
-    tags: ['festa'],
-    variants: variants('SMP', [['Caramelo', '#B5743C'], ['Verde-oliva', '#6B6B3A']])
+    id: 'sg04', slug: 'vestido-kaftan-mare', name: 'Vestido Kaftan Maré', category: 'conchas',
+    price: 239.9, confirmed: false,
+    description: 'Vestido kaftan longo preto com conchas e estrelas-do-mar em traço claro.',
+    details: ['Mangas amplas', 'Decote V', 'Cintura franzida com amarração'],
+    images: photos('vestido-kaftan-mare', 2), weight: WEIGHT, dimensions: BOX, tags: [],
+    variants: variants('MAR', 'Preto', '#17181D', EXAMPLE_STOCK)
   },
   {
-    id: 'p05', slug: 'calca-wide-leg-clara', name: 'Calça Wide Leg Clara', category: 'calcas',
-    description: 'Calça pantalona em linho misto, cintura alta com pregas. Alonga a silhueta.',
-    details: ['Tecido: linho com viscose', 'Zíper lateral invisível', 'Bolsos faca'],
-    price: 189.9, images: [], weight: 420, dimensions: box,
-    tags: ['trabalho', 'casual'], isBestSeller: true,
-    variants: variants('CWL', [['Cru', '#EDE3D1'], ['Marrom', '#5B3A29']])
+    id: 'sg05', slug: 'vestido-longo-lirio-noite', name: 'Vestido Longo Lírio Noite', category: 'florais',
+    price: 249.9, confirmed: false,
+    description: 'Vestido longo preto com lírios amarelos e lilases na saia.',
+    details: ['Alças largas', 'Decote reto', 'Cintura marcada', 'Saia franzida'],
+    images: photos('vestido-longo-lirio-noite', 2), weight: WEIGHT, dimensions: BOX, tags: [],
+    variants: variants('LNO', 'Preto', '#17181D', EXAMPLE_STOCK)
   },
   {
-    id: 'p06', slug: 'macacao-longo-marina', name: 'Macacão Longo Marina', category: 'macacoes',
-    description: 'Macacão de alcinha com faixa na cintura e pernas amplas. Peça única, look pronto.',
-    details: ['Tecido: crepe', 'Alças reguláveis', 'Faixa removível'],
-    price: 259.9, images: [], weight: 450, dimensions: box,
-    tags: ['festa', 'verão'], isNew: true,
-    variants: variants('MLM', [['Azul-marinho', '#1F2D4D'], ['Vermelho', '#B3241A']])
+    id: 'sg06', slug: 'vestido-longo-brisa', name: 'Vestido Longo Brisa', category: 'conchas',
+    price: 259.9, confirmed: false,
+    description: 'Vestido longo off-white com conchas em traço preto e amarração nas costas.',
+    details: ['Alças reguláveis', 'Decote arredondado', 'Recorte com laço nas costas'],
+    images: photos('vestido-longo-brisa', 3), weight: WEIGHT, dimensions: BOX, tags: [],
+    variants: variants('BRI', 'Off-white', '#F3EBDD', EXAMPLE_STOCK)
   },
   {
-    id: 'p07', slug: 'vestido-curto-luna', name: 'Vestido Curto Luna', category: 'vestidos',
-    description: 'Vestido curto com saia evasê e alças finas. Para os dias de sol e as noites quentes.',
-    details: ['Tecido: linho misto', 'Bojo removível', 'Comprimento: 85 cm'],
-    price: 169.9, images: [], weight: 250, dimensions: box,
-    tags: ['verão', 'casual'],
-    variants: variants('VCL', [['Amarelo', '#E8B931'], ['Estampado', '#C96B4B']])
+    id: 'sg07', slug: 'vestido-kaftan-sicilia', name: 'Vestido Kaftan Sicília', category: 'mediterraneo',
+    price: 239.9, confirmed: false,
+    description: 'Vestido kaftan longo off-white com estampa mediterrânea de frutas, flores e mar.',
+    details: ['Mangas amplas', 'Decote V', 'Cintura franzida com amarração'],
+    images: photos('vestido-kaftan-sicilia', 1), weight: WEIGHT, dimensions: BOX, tags: [],
+    variants: variants('SIC', 'Off-white', '#F3EBDD', EXAMPLE_STOCK)
   },
   {
-    id: 'p08', slug: 'cropped-tricot-mel', name: 'Cropped Tricot Mel', category: 'blusas',
-    description: 'Cropped de tricot canelado com gola alta. Combina com tudo do seu guarda-roupa.',
-    details: ['Tecido: tricot canelado', 'Ajuste ao corpo', 'Comprimento: 42 cm'],
-    price: 99.9, images: [], weight: 200, dimensions: box,
-    tags: ['casual', 'inverno'],
-    variants: variants('CTM', [['Mel', '#D19A4A'], ['Off-white', '#F3EBDD'], ['Preto', '#1F1A17']])
+    id: 'sg08', slug: 'vestido-longo-lirio-aquarela', name: 'Vestido Longo Lírio Aquarela', category: 'florais',
+    price: 279.9, confirmed: false,
+    description: 'Vestido longo off-white com lírios coloridos na barra e recortes que marcam a cintura.',
+    details: ['Alças finas', 'Decote V profundo', 'Recortes com franzido na lateral'],
+    images: photos('vestido-longo-lirio-aquarela', 1), weight: WEIGHT, dimensions: BOX, tags: [],
+    variants: variants('LAQ', 'Off-white', '#F3EBDD', EXAMPLE_STOCK)
   },
   {
-    id: 'p09', slug: 'conjunto-linho-praia', name: 'Conjunto Linho Praia', category: 'conjuntos',
-    description: 'Camisa amarrada + short de cintura alta em linho. O conjunto das férias.',
-    details: ['Tecido: linho com viscose', 'Short com elástico nas costas', 'Camisa com botões de coco'],
-    price: 239.9, compareAtPrice: 289.9, images: [], weight: 380, dimensions: box,
-    tags: ['verão'],
-    variants: variants('CLP', [['Branco', '#FAFAF7'], ['Terracota', '#C4532F']])
-  },
-  {
-    id: 'p10', slug: 'vestido-longo-gabi', name: 'Vestido Longo Gabi', category: 'vestidos',
-    description: 'O vestido assinatura da marca: longo, com fenda lateral e costas abertas.',
-    details: ['Tecido: malha canelada premium', 'Fenda lateral', 'Comprimento: 140 cm'],
-    price: 299.9, images: [], weight: 400, dimensions: box,
-    tags: ['festa'], isBestSeller: true, isNew: true,
-    variants: variants('VLG', [['Vermelho', '#B3241A'], ['Preto', '#1F1A17']])
-  },
-  {
-    id: 'p11', slug: 'saia-jeans-midi-rio', name: 'Saia Jeans Midi Rio', category: 'saias',
-    description: 'Saia jeans midi com fenda frontal e lavagem clara. Básica que nunca sai de moda.',
-    details: ['Tecido: jeans com elastano', 'Fenda frontal', '5 bolsos'],
-    price: 149.9, images: [], weight: 480, dimensions: box,
-    tags: ['casual'],
-    variants: variants('SJR', [['Jeans claro', '#9DB4CF']])
-  },
-  {
-    id: 'p12', slug: 'body-decote-quadrado-bela', name: 'Body Decote Quadrado Bela', category: 'blusas',
-    description: 'Body de suplex com decote quadrado e fechamento por colchetes. Ajuste perfeito.',
-    details: ['Tecido: suplex', 'Fechamento por colchetes', 'Forro duplo'],
-    price: 89.9, images: [], weight: 150, dimensions: box,
-    tags: ['casual', 'festa'],
-    variants: variants('BDQ', [['Preto', '#1F1A17'], ['Chocolate', '#4A2C21'], ['Vermelho', '#B3241A']])
+    id: 'sg09', slug: 'vestido-longo-perola', name: 'Vestido Longo Pérola', category: 'conchas',
+    price: 249.9, confirmed: false,
+    description: 'Vestido longo off-white com decote reto e conchas em traço preto.',
+    details: ['Alças finas', 'Decote reto', 'Recorte abaixo do busto'],
+    images: photos('vestido-longo-perola', 1), weight: WEIGHT, dimensions: BOX, tags: [],
+    variants: variants('PER', 'Off-white', '#F3EBDD', EXAMPLE_STOCK)
   }
 ]
 

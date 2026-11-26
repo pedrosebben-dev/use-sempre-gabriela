@@ -130,11 +130,14 @@ const methods: { value: PaymentMethod; label: string; icon: string }[] = [
 
       <form v-else class="layout" novalidate @submit.prevent="placeOrder">
         <div class="stack main">
-          <Message v-if="cfg.paymentsDemo || cfg.shippingEstimated" severity="info" :closable="false">
+          <Message v-if="!cfg.salesOpen" severity="warn" :closable="false">
+            <strong>Loja em pré-lançamento:</strong> os pedidos ainda não estão abertos. Em breve!
+          </Message>
+          <Message v-else-if="cfg.paymentsDemo || cfg.shippingEstimated" severity="info" :closable="false">
             <strong>Modo demonstração:</strong>
             <span v-if="cfg.paymentsDemo"> nenhum pagamento é cobrado de verdade.</span>
             <span v-if="cfg.shippingEstimated"> Frete calculado por tabela estimada.</span>
-            Configure as chaves no <code>.env</code> para ativar Mercado Pago e Correios.
+            Configure as chaves no <code>.env</code> para ativar Mercado Pago e Melhor Envio.
           </Message>
 
           <!-- 1. DADOS -->
@@ -288,7 +291,7 @@ const methods: { value: PaymentMethod; label: string; icon: string }[] = [
           <div class="lines">
             <div v-for="l in cart.lines" :key="l.sku" class="sline">
               <div class="sthumb">
-                <ProductImage :src="l.image" :alt="l.name" :color="l.colorHex" ratio="1" />
+                <ProductImage :src="l.image" :alt="l.name" :color="l.colorHex" ratio="1" sizes="56px" />
                 <span class="qty">{{ l.quantity }}</span>
               </div>
               <div class="grow">
@@ -311,7 +314,7 @@ const methods: { value: PaymentMethod; label: string; icon: string }[] = [
             <p v-if="co.paymentMethod === 'card'" class="muted small right">em {{ card.installments }}x de {{ formatBRL(total / card.installments) }}</p>
           </div>
           <Button
-            type="submit" :loading="submitting" class="sg-cta w-full" icon="pi pi-lock"
+            type="submit" :loading="submitting" :disabled="!cfg.salesOpen" class="sg-cta w-full" icon="pi pi-lock"
             :label="co.paymentMethod === 'pix' ? 'Pagar com Pix' : co.paymentMethod === 'boleto' ? 'Gerar boleto' : 'Pagar com cartão'"
           />
           <p class="muted small center">Ao finalizar você concorda com nossa <NuxtLink to="/trocas" class="link">política de trocas</NuxtLink>.</p>

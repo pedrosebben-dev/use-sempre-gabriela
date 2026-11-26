@@ -1,5 +1,7 @@
-/** Diz ao front se está em modo demonstração (sem expor segredos). */
+/** Diz ao front em que estado a loja está (sem expor segredos). */
 export default defineEventHandler(() => ({
   paymentsDemo: !mercadoPagoConfigured(),
-  shippingEstimated: !correiosConfigured()
+  shippingEstimated: !shippingConfigured(),
+  preview: products.some(p => !p.confirmed),
+  salesOpen: salesOpen()
 }))

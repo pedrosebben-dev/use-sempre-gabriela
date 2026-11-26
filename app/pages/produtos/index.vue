@@ -5,27 +5,18 @@ const route = useRoute()
 const router = useRouter()
 const { data: products, status } = await useFetch<Product[]>('/api/products', { default: () => [] })
 
-const categoryOptions = [
-  { label: 'Tudo', value: '' },
-  { label: 'Vestidos', value: 'vestidos' },
-  { label: 'Conjuntos', value: 'conjuntos' },
-  { label: 'Blusas', value: 'blusas' },
-  { label: 'Saias', value: 'saias' },
-  { label: 'Calças', value: 'calcas' },
-  { label: 'Macacões', value: 'macacoes' }
-]
+const categoryOptions = [{ label: 'Tudo', value: '' }, ...CATEGORIES]
 const sortOptions = [
   { label: 'Destaques', value: 'featured' },
   { label: 'Menor preço', value: 'price-asc' },
-  { label: 'Maior preço', value: 'price-desc' },
-  { label: 'Novidades', value: 'new' }
+  { label: 'Maior preço', value: 'price-desc' }
 ]
+const sizeOptions = computed(() => [...new Set(products.value.flatMap(p => p.variants.map(v => v.size)))])
 
 const category = computed({
   get: () => String(route.query.category || ''),
-  set: v => router.replace({ query: { ...route.query, category: v || undefined, tag: undefined } })
+  set: v => router.replace({ query: { ...route.query, category: v || undefined } })
 })
-const onlyNew = computed(() => route.query.tag === 'novidades')
 const sort = ref('featured')
 const search = ref('')
 const sizeFilter = ref<string[]>([])
@@ -33,7 +24,6 @@ const sizeFilter = ref<string[]>([])
 const filtered = computed(() => {
   let list = [...products.value]
   if (category.value) list = list.filter(p => p.category === category.value)
-  if (onlyNew.value) list = list.filter(p => p.isNew)
   if (search.value.trim()) {
     const s = search.value.toLowerCase()
     list = list.filter(p => p.name.toLowerCase().includes(s))
@@ -41,13 +31,11 @@ const filtered = computed(() => {
   if (sizeFilter.value.length) list = list.filter(p => p.variants.some(v => sizeFilter.value.includes(v.size) && v.stock > 0))
   if (sort.value === 'price-asc') list.sort((a, b) => a.price - b.price)
   if (sort.value === 'price-desc') list.sort((a, b) => b.price - a.price)
-  if (sort.value === 'new') list.sort((a, b) => Number(!!b.isNew) - Number(!!a.isNew))
-  if (sort.value === 'featured') list.sort((a, b) => Number(!!b.isBestSeller) - Number(!!a.isBestSeller))
   return list
 })
 
 const title = computed(() =>
-  onlyNew.value ? 'Novidades' : categoryOptions.find(c => c.value === category.value && c.value)?.label || 'Toda a coleção'
+  categoryOptions.find(c => c.value === category.value && c.value)?.label || 'Toda a coleção'
 )
 useSeoMeta({ title: () => `${title.value} | Sempre Gabriela` })
 </script>
@@ -69,7 +57,7 @@ useSeoMeta({ title: () => `${title.value} | Sempre Gabriela` })
     <div class="filters">
       <SelectButton v-model="category" :options="categoryOptions" option-label="label" option-value="value" :allow-empty="false" class="cats" aria-label="Categoria" />
       <div class="row wrap">
-        <MultiSelect v-model="sizeFilter" :options="['PP', 'P', 'M', 'G', 'GG']" placeholder="Tamanho" :show-toggle-all="false" class="w-sel" />
+        <MultiSelect v-model="sizeFilter" :options="sizeOptions" placeholder="Tamanho" :show-toggle-all="false" class="w-sel" />
         <Select v-model="sort" :options="sortOptions" option-label="label" option-value="value" class="w-sel" aria-label="Ordenar" />
       </div>
     </div>
@@ -94,12 +82,11 @@ useSeoMeta({ title: () => `${title.value} | Sempre Gabriela` })
 .filters { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin: 28px 0; padding: 14px 0; border-top: 1px solid var(--sg-line); border-bottom: 1px solid var(--sg-line); }
 .cats { flex-wrap: wrap; }
 .w-sel { min-width: 170px; }
-.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px 20px; }
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 36px 24px; }
 .empty { text-align: center; padding: 80px 0; display: grid; gap: 10px; justify-items: center; }
 .empty i { font-size: 2rem; color: var(--sg-peach); }
-@media (max-width: 1000px) { .grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 760px) {
-  .grid { grid-template-columns: repeat(2, 1fr); gap: 24px 14px; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 14px; }
   .cats { overflow-x: auto; flex-wrap: nowrap; max-width: 100%; }
   .search { width: 100%; }
   .search :deep(input) { width: 100%; }

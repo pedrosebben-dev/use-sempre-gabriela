@@ -2,6 +2,6 @@
 export function useStoreConfig() {
   return useFetch('/api/config', {
     key: 'store-config',
-    default: () => ({ paymentsDemo: true, shippingEstimated: true })
+    default: () => ({ paymentsDemo: true, shippingEstimated: true, preview: true, salesOpen: false })
   })
 }

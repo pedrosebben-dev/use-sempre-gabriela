@@ -8,7 +8,7 @@ const cart = useCartStore()
 <template>
   <div class="line" :class="{ compact }">
     <NuxtLink :to="`/produto/${line.slug}`" class="thumb">
-      <ProductImage :src="line.image" :alt="line.name" :color="line.colorHex" />
+      <ProductImage :src="line.image" :alt="line.name" :color="line.colorHex" sizes="88px" />
     </NuxtLink>
     <div class="body">
       <div class="row between top">
